@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - shared
+allowBuilds:
+  "@scarf/scarf": false
+  bcrypt: false
+  esbuild: false
+  msgpackr-extract: false
