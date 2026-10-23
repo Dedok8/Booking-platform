@@ -1,4 +1,4 @@
-FROM node:20-alpha
+FROM node:24-alpine
 RUN codepack enable
 WORKDIR /app
 
