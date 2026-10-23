@@ -5,10 +5,12 @@ try {
   process.loadEnvFile('.env.development');
 } catch {}
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export default defineConfig({
   clientUrl: process.env.DATABASE_URL,
   entities: ['./dist/**/*.entity.js'],
-  preferTs: true,
+  preferTs: !isProd,
   extensions: [Migrator],
   migrations: { path: 'dist/migrations', pathTs: 'src/migrations' },
 });
