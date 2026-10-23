@@ -1,6 +1,7 @@
 import { AppBullModule } from '@/core/config/bullmq/bullmq.module.js';
 import { validateEnv } from '@/core/config/validation/env.validation.js';
 import { DBModule } from '@/core/db/db.module.js';
+import { HealthController } from '@/core/health/health.controller.js';
 import { RedisModule } from '@/core/redis/redis.module.js';
 import { AppThrottlerModule } from '@/core/throttler/throttler.module.js';
 import { Module } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     RedisModule,
     AppThrottlerModule,
     AppBullModule,
+    HealthController,
   ],
 })
 export class AppConfigModule {}
