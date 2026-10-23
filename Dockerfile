@@ -1,5 +1,5 @@
 FROM node:24-alpine
-RUN codepack enable
+RUN corepack enable
 WORKDIR /app
 
 ENV HUSKY=0
