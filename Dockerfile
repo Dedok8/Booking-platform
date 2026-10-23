@@ -14,4 +14,4 @@ ENV NODE_ENV=production
 EXPOSE 10000
 WORKDIR /app/apps/backend
 
-CMD ["node", "apps/backend/dist/main.js"]
+CMD ["node", "dist/main.js"]
