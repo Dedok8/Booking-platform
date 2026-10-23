@@ -19,7 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     RedisModule,
     AppThrottlerModule,
     AppBullModule,
-    HealthController,
   ],
+  controllers: [HealthController],
 })
 export class AppConfigModule {}
