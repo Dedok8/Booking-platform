@@ -6,8 +6,9 @@ ENV HUSKY=0
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile --filter "./apps/backend..."
-RUN pnpm --filter "./apps/backend..." build
+RUN pnpm install --frozen-lockfile --filter "backend..."
+RUN pnpm --filter "@booking-platform/shared" build
+RUN pnpm --filter "backend" build
 
 ENV NODE_ENV=production
 EXPOSE 10000
