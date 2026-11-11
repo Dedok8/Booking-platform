@@ -19,13 +19,17 @@ export const ConfirmEmailSchema = z.object({
 
 export const ResendConfirmationSchema = z.object({ email: EmailSchema });
 
-export const RegisterSchema = CreateUserSchema;
+export const RegisterSchema = CreateUserSchema.pick({
+  name: true,
+  email: true,
+  password: true,
+});
 
 export const RegisterFormSchema = RegisterSchema.extend({
   confirmPassword: z
     .string({ error: "validation.required" })
     .min(1, { error: "validation.required" }),
-}).refine((data) => data.password === data.confirmPassword, {
+}).refine((d) => d.password === d.confirmPassword, {
   path: ["confirmPassword"],
   error: "validation.auth.password.mismatch",
 });

@@ -10,9 +10,9 @@ import {
 import { createZodDto } from 'nestjs-zod';
 
 export class UserDto extends createZodDto(UserDtoSchema) {}
-export class UserQueryDto extends createZodDto(UserQuerySchema) {}
-export class ChangePasswordDto extends createZodDto(ChangePasswordSchema) {}
-export class CreateUserDto extends createZodDto(CreateUserSchema) {}
-export class SearchUserDto extends createZodDto(SearchUserSchema) {}
-export class UpdateUserRoleDto extends createZodDto(UpdateUserRoleSchema) {}
-export class UpdateUserDto extends createZodDto(UpdateUserSchema) {}
+export class UserQueryInput extends createZodDto(UserQuerySchema) {}
+export class ChangePasswordInput extends createZodDto(ChangePasswordSchema) {}
+export class CreateUserInput extends createZodDto(CreateUserSchema) {}
+export class SearchUserInput extends createZodDto(SearchUserSchema) {}
+export class UpdateUserRoleInput extends createZodDto(UpdateUserRoleSchema) {}
+export class UpdateUserInput extends createZodDto(UpdateUserSchema) {}

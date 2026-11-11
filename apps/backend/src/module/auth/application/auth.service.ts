@@ -8,9 +8,9 @@ import {
 import { EmailVerificationService } from '@/module/auth/application/email.verification.service.js';
 import { TokenService } from '@/module/auth/application/token.service.js';
 import { SessionRepository } from '@/module/auth/domain/interfaces/refresh-session.repository.js';
-import { SessionMeta } from '@/module/auth/domain/types/auth.types.js';
+import { ISessionMeta } from '@/module/auth/domain/types/auth.types.js';
 import { MailService } from '@/module/mail/mail.service.js';
-import { ChangePasswordDto } from '@/module/user/application/dto/user.dto.js';
+import { ChangePasswordInput } from '@/module/user/application/dto/user.dto.js';
 import { UserService } from '@/module/user/application/user.service.js';
 import { User } from '@/module/user/domain/entities/user.entity.js';
 import { AppError } from '@/shared/lib/error.js';
@@ -35,21 +35,23 @@ export class AuthService {
     private readonly hashService: HashService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<void> {
     const user = await this.users.register(dto);
     await this.sendCode(user);
-
-    return user;
   }
 
-  async confirmEmail(dto: ConfirmEmailDto): Promise<void> {
+  async confirmEmail(
+    dto: ConfirmEmailDto,
+    meta: ISessionMeta,
+  ): Promise<IAuthResult> {
     const user = await this.users.findByEmail(dto.email);
     if (!user || user.emailVerifiedAt) {
       throw AppError.invalidCode();
     }
 
     await this.verification.verify(user.id, dto.code);
-    await this.users.markEmailVerified(user.id);
+    const verified = await this.users.markEmailVerified(user.id);
+    return this.issueSession(verified, meta, randomUUID());
   }
 
   async resendConfirmation(dto: ResendConfirmationDto): Promise<void> {
@@ -60,7 +62,7 @@ export class AuthService {
     await this.sendCode(user);
   }
 
-  async login(dto: LoginDto, meta: SessionMeta): Promise<IAuthResult> {
+  async login(dto: LoginDto, meta: ISessionMeta): Promise<IAuthResult> {
     const user = await this.users.findByEmail(dto.email);
 
     const hash = user?.passwordHash ?? (await this.getDummyHash());
@@ -77,7 +79,10 @@ export class AuthService {
     return this.issueSession(user, meta, randomUUID());
   }
 
-  async refresh(refreshToken: string, meta: SessionMeta): Promise<IAuthResult> {
+  async refresh(
+    refreshToken: string,
+    meta: ISessionMeta,
+  ): Promise<IAuthResult> {
     const payload = await this.token.verifyRefresh(refreshToken);
     const session = await this.sessions.findById(payload.sid);
 
@@ -85,16 +90,16 @@ export class AuthService {
       !session ||
       session.user.id !== payload.sub ||
       session.familyId !== payload.fid ||
-      this.token.matches(refreshToken, session.tokenHash) ||
+      !this.token.matches(refreshToken, session.tokenHash) ||
       session.expiresAt.getTime() <= Date.now()
     ) {
-      throw AppError.unauthorized;
+      throw AppError.unauthorized();
     }
 
     const claimed = await this.sessions.revokeIfActive(session.id);
     if (!claimed) {
       await this.sessions.revokeFamily(session.familyId);
-      throw AppError.unauthorized;
+      throw AppError.unauthorized();
     }
 
     const user = await this.users.findById(payload.sub);
@@ -125,19 +130,17 @@ export class AuthService {
   async changePassword(
     userId: string,
     sessionId: string,
-    dto: ChangePasswordDto,
+    dto: ChangePasswordInput,
   ): Promise<void> {
-    const user = this.users.findById(userId);
+    const user = await this.users.findById(userId);
     const ok = await this.hashService.compare(
       dto.currentPassword,
-      (await user).passwordHash,
+      user.passwordHash,
     );
-
     if (!ok) throw AppError.invalidCredentials();
 
     await this.users.setPassword(userId, dto.newPassword);
-
-    await this.sessions.revokeAllForUser((await user).id, sessionId);
+    await this.sessions.revokeAllForUser(user.id, sessionId);
   }
 
   private async sendCode(user: User): Promise<void> {
@@ -148,7 +151,7 @@ export class AuthService {
 
   private async issueSession(
     user: User,
-    meta: SessionMeta,
+    meta: ISessionMeta,
     familyId: string,
   ): Promise<IAuthResult> {
     const sessionId = randomUUID();

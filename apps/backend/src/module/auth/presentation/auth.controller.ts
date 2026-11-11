@@ -13,8 +13,8 @@ import {
 } from '@/module/auth/application/dto/auth.dto.js';
 import { TokenService } from '@/module/auth/application/token.service.js';
 import {
-  type AuthUser,
-  SessionMeta,
+  type IAuthUser,
+  ISessionMeta,
 } from '@/module/auth/domain/types/auth.types.js';
 import { toUserDto } from '@/module/user/application/mapper/user.mapper.js';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator.js';
@@ -36,7 +36,7 @@ import { Throttle } from '@nestjs/throttler';
 import { type Request, type Response } from 'express';
 
 const REFRESH_COOKIE = 'refresh_token';
-const REFRESH_COOKIE_PATH = '/api/auth';
+const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
 @Controller('auth')
 export class AuthController {
@@ -49,16 +49,24 @@ export class AuthController {
   @Public()
   @Post('register')
   @Throttle({ default: throttlerConfig.register })
-  async register(@Body() body: RegisterDto) {
-    return toUserDto(await this.auth.register(body));
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async register(@Body() body: RegisterDto): Promise<void> {
+    await this.auth.register(body);
   }
 
   @Public()
   @Post('confirm-email')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @Throttle({ default: throttlerConfig.email })
-  async confirmEmail(@Body() body: ConfirmEmailDto): Promise<void> {
-    await this.auth.confirmEmail(body);
+  async confirmEmail(
+    @Body() body: ConfirmEmailDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.respond(
+      res,
+      await this.auth.confirmEmail(body, this.meta(req)),
+    );
   }
 
   @Public()
@@ -110,7 +118,7 @@ export class AuthController {
   @Post('logout-all')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logoutAll(
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: IAuthUser,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     await this.auth.logoutAll(user.id);
@@ -118,14 +126,14 @@ export class AuthController {
   }
 
   @Get('me')
-  async me(@CurrentUser() user: AuthUser) {
+  async me(@CurrentUser() user: IAuthUser) {
     return toUserDto(await this.auth.getMe(user.id));
   }
 
   @Post('change-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async changePassword(
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: IAuthUser,
     @Body() body: ChangePasswordDto,
   ): Promise<void> {
     await this.auth.changePassword(user.id, user.sessionId, body);
@@ -151,7 +159,7 @@ export class AuthController {
     return typeof value === 'string' && value ? value : undefined;
   }
 
-  private meta(req: Request): SessionMeta {
+  private meta(req: Request): ISessionMeta {
     return {
       ip: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,

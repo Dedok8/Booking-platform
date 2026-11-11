@@ -1,10 +1,16 @@
+import { logout, setCredentials, type IUserSlice } from "@/entities/auth/model";
+import { mainConfig } from "@/shared/config/mainConfig";
+import { API_ROUTES } from "@/shared/config/routes";
+
 import {
-  createApi,
   fetchBaseQuery,
   type BaseQueryFn,
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
+import { Mutex } from "async-mutex";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import type { AuthResponse } from "@booking-platform/shared";
 
 const mutex = new Mutex();
 
@@ -58,17 +64,17 @@ const baseQueryWithReauth: BaseQueryFn<
             method: "POST",
           },
           api,
-          extraOptions,
+          extraOptions
         );
 
         if (refreshResult.data) {
-          const data = refreshResult.data as IAccessTokenResponse;
+          const data = refreshResult.data as AuthResponse;
           api.dispatch(
-            setCredentials({ user: data.user, accessToken: data.accessToken }),
+            setCredentials({ user: data.user, accessToken: data.accessToken })
           );
 
           result = await baseQuery(args, api, extraOptions);
-        } else {
+        } else if ([401, 403].includes(refreshResult.error?.status as number)) {
           api.dispatch(logout());
         }
       } finally {

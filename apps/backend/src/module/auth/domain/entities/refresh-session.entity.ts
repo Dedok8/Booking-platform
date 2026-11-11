@@ -15,7 +15,7 @@ export const RefreshSessionEntity = defineEntity({
     tokenHash: p.string().length(64),
     expiresAt: p.datetime().index(),
     revokeAt: p.datetime().nullable(),
-    userAgent: p.string().length(45).nullable(),
+    userAgent: p.string().length(255).nullable(),
     ip: p.string().length(45).nullable(),
     createdAt: p.datetime().onCreate(() => new Date()),
     updatedAt: p

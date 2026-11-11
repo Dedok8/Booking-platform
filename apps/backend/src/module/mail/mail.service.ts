@@ -22,6 +22,7 @@ export class MailService {
         removeOnComplete: true,
         removeOnFail: 100,
       },
+      
     );
   }
 }

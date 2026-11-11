@@ -1,3 +1,5 @@
+import { SLUG_MAX } from "./slugSchema";
+
 const UA_TRANSLIT_MAP: Record<string, string> = {
   а: "a",
   б: "b",
@@ -36,13 +38,14 @@ const UA_TRANSLIT_MAP: Record<string, string> = {
 };
 
 export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .split("")
+  return Array.from(text.normalize("NFC").toLowerCase().replace(/зг/g, "zgh"))
     .map((char) => UA_TRANSLIT_MAP[char] ?? char)
     .join("")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['’ʼ`]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, SLUG_MAX)
+    .replace(/-+$/g, "");
 }

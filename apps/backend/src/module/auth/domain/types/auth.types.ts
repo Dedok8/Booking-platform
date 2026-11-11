@@ -1,24 +1,24 @@
 import { USER_ROLE } from '@booking-platform/shared';
 
-export interface AccessTokenPayload {
+export interface IAccessTokenPayload {
   sub: string;
   sid: string;
   role: USER_ROLE;
 }
 
-export interface RefreshTokenPayload {
+export interface IRefreshTokenPayload {
   sub: string;
   sid: string;
   fid: string;
 }
 
-export interface AuthUser {
+export interface IAuthUser {
   id: string;
   role: USER_ROLE;
   sessionId: string;
 }
 
-export interface SessionMeta {
+export interface ISessionMeta {
   ip: string | null;
   userAgent: string | null;
 }

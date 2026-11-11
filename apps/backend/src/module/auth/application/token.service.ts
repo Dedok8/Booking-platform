@@ -1,7 +1,7 @@
 import { Env } from '@/core/config/validation/env.validation.js';
 import {
-  AccessTokenPayload,
-  RefreshTokenPayload,
+  IAccessTokenPayload,
+  IRefreshTokenPayload,
 } from '@/module/auth/domain/types/auth.types.js';
 import { parseDurationToSeconds } from '@/shared/lib/duration.js';
 
@@ -48,7 +48,7 @@ export class TokenService {
     );
   }
 
-  signAccessToken(payload: AccessTokenPayload): Promise<string> {
+  signAccessToken(payload: IAccessTokenPayload): Promise<string> {
     return this.jwt.signAsync(payload, {
       secret: this.accessSecret,
       algorithm: ALGORITHM,
@@ -56,7 +56,7 @@ export class TokenService {
     });
   }
 
-  signRefreshToken(payload: RefreshTokenPayload): Promise<string> {
+  signRefreshToken(payload: IRefreshTokenPayload): Promise<string> {
     return this.jwt.signAsync(payload, {
       secret: this.refreshSecret,
       algorithm: ALGORITHM,
@@ -64,11 +64,11 @@ export class TokenService {
     });
   }
 
-  async verifyAccess(token: string): Promise<AccessTokenPayload> {
+  async verifyAccess(token: string): Promise<IAccessTokenPayload> {
     return this.verify(token, this.accessSecret, accessSecretSchema);
   }
 
-  async verifyRefresh(token: string): Promise<RefreshTokenPayload> {
+  async verifyRefresh(token: string): Promise<IRefreshTokenPayload> {
     return this.verify(token, this.refreshSecret, refreshSecretSchema);
   }
 

@@ -1,8 +1,8 @@
 import {
-  CreateUserDto,
-  UpdateUserDto,
-  UpdateUserRoleDto,
-  UserQueryDto,
+  CreateUserInput,
+  UpdateUserInput,
+  UpdateUserRoleInput,
+  UserQueryInput,
 } from '@/module/user/application/dto/user.dto.js';
 import { toUserDto } from '@/module/user/application/mapper/user.mapper.js';
 import { UserService } from '@/module/user/application/user.service.js';
@@ -28,7 +28,7 @@ export class UserController {
   constructor(private readonly users: UserService) {}
 
   @Get()
-  async list(@Query() query: UserQueryDto) {
+  async getAll(@Query() query: UserQueryInput) {
     const { items, ...meta } = await this.users.findAll(query);
     return { items: items.map(toUserDto), ...meta };
   }
@@ -39,14 +39,14 @@ export class UserController {
   }
 
   @Post()
-  async create(@Body() body: CreateUserDto) {
-    return toUserDto(await this.users.create(body));
+  async create(@Body() body: CreateUserInput) {
+    return toUserDto(await this.users.createByAdmin(body));
   }
 
   @Patch(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: UpdateUserDto,
+    @Body() body: UpdateUserInput,
   ) {
     return toUserDto(await this.users.update(id, body));
   }
@@ -54,7 +54,7 @@ export class UserController {
   @Patch(':id/role')
   async changeRole(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: UpdateUserRoleDto,
+    @Body() body: UpdateUserRoleInput,
   ) {
     return toUserDto(await this.users.updateRole(id, body));
   }

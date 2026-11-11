@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "husky",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:shared": "pnpm --filter @booking-platform/shared dev",
+    "ListingQuerySchema": "pnpm --filter @booking-platform/shared dev",
     "dev:backend": "pnpm --filter backend dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",

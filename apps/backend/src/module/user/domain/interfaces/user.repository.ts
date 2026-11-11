@@ -1,19 +1,19 @@
 import { User } from '@/module/user/domain/entities/user.entity.js';
 import { SORT_ORDER, USER_ROLE } from '@booking-platform/shared';
 
+export interface IUpdateUserData {
+  name?: string;
+  email?: string;
+  passwordHash?: string;
+  refreshToken?: string | null;
+}
+
 export interface ICreateUserData {
   name: string;
   email: string;
   passwordHash: string;
   role: USER_ROLE;
   emailVerifiedAt: Date | null;
-}
-
-export interface IUpdateUserData {
-  name?: string;
-  email?: string;
-  passwordHash?: string;
-  refreshToken?: string | null;
 }
 
 export interface IUserQuery {
@@ -33,6 +33,6 @@ export abstract class UserRepository {
   ): Promise<{ items: User[]; total: number }>;
   abstract create(data: ICreateUserData): User;
   abstract update(id: string, data: IUpdateUserData): Promise<User | null>;
-  abstract delete(user: User): Promise<void>;
+  abstract delete(user: User): void;
   abstract flush(): Promise<void>;
 }

@@ -1,4 +1,4 @@
-import { UserQueryDto } from '@/module/user/application/dto/user.dto.js';
+import { UserQueryInput } from '@/module/user/application/dto/user.dto.js';
 import { User, UserEntity } from '@/module/user/domain/entities/user.entity.js';
 import {
   ICreateUserData,
@@ -7,12 +7,13 @@ import {
   UserRepository,
 } from '@/module/user/domain/interfaces/user.repository.js';
 import { escapeLike } from '@/shared/lib/escape-like.js';
+import { FlushClass } from '@/shared/utils/flush.js';
 
 import { EntityManager, FilterQuery } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class OrmUserRepository implements UserRepository {
+export class OrmUserRepository implements UserRepository, FlushClass {
   constructor(private readonly em: EntityManager) {}
 
   findById(id: string): Promise<User | null> {
@@ -33,7 +34,6 @@ export class OrmUserRepository implements UserRepository {
       where.$or = [
         { name: { $ilike: pattern } },
         { email: { $ilike: pattern } },
-        { role: { $ilike: pattern } },
       ];
     }
 
@@ -61,7 +61,7 @@ export class OrmUserRepository implements UserRepository {
     return user;
   }
 
-  async delete(user: User): Promise<void> {
+  delete(user: User): void {
     this.em.remove(user);
   }
 

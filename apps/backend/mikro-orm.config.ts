@@ -12,5 +12,9 @@ export default defineConfig({
   entities: ['./dist/**/*.entity.js'],
   preferTs: !isProd,
   extensions: [Migrator],
-  migrations: { path: 'dist/migrations', pathTs: 'src/migrations' },
+  migrations: {
+    path: 'dist/migrations',
+    pathTs: 'src/migrations',
+    snapshot: true,
+  },
 });

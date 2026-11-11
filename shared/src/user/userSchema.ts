@@ -3,7 +3,12 @@ import { PasswordSchema } from "../common/auth/passwordSchema";
 import { EmailSchema } from "../common/auth/emailSchema";
 import { SORT_USER, USER_LIMITS, USER_ROLE } from "../enums";
 import { SearchSchema } from "../common/searchSchema";
-import { BaseQuerySchema } from "../pagination/paginationSchema";
+import {
+  BaseQuerySchema,
+  dateRangeError,
+  DateRangeSchema,
+  isValidDateRange,
+} from "../pagination/paginationSchema";
 
 const NameSchema = z
   .string({ error: "validation.string" })
@@ -42,8 +47,11 @@ export const CreateUserSchema = z.object({
   name: NameSchema,
   email: EmailSchema,
   password: PasswordSchema,
-  role: z.enum(USER_ROLE, { error: "validation.user.role.invalid" }).optional(),
-  emailVerifiedAt: z.iso.datetime(),
+  role: z
+    .enum(USER_ROLE, { error: "validation.user.role.invalid" })
+    .optional()
+    .default("USER"),
+  // emailVerifiedAt: z.iso.datetime(),
 });
 
 export const SearchUserSchema = SearchSchema;
@@ -62,9 +70,11 @@ export const UserQuerySchema = BaseQuerySchema.extend({
     .enum(SORT_USER, { error: "validation.user.sortBy.invalid" })
     .default(SORT_USER.CREATED_AT),
   role: z.enum(USER_ROLE, { error: "validation.user.role.invalid" }).optional(),
-});
+})
+  .extend(DateRangeSchema.shape)
+  .refine(isValidDateRange, dateRangeError);
 
-export type UserDtoInput = z.infer<typeof UserDtoSchema>;
+export type UserDto = z.infer<typeof UserDtoSchema>;
 export type UserQueryInput = z.infer<typeof UserQuerySchema>;
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;

@@ -9,6 +9,8 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import path from 'node:path';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   await app.get(MikroORM).migrator.up();
@@ -32,7 +34,6 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
-    prefix: 'api/v',
   });
 
   if (process.env.ENABLE_SWAGGER === 'true') {
@@ -45,6 +46,12 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
+  }
+
+  if (process.env.STORAGE_DRIVER !== 's3') {
+    app.useStaticAssets(path.resolve(process.env.UPLOADS_DIR ?? './uploads'), {
+      prefix: '/uploads',
+    });
   }
 
   await app.listen(config.get('PORT', { infer: true }));
